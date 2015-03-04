@@ -14,7 +14,18 @@
 \begin{document}
 \maketitle
 
-We propose the implementation of a distributed, randomized low rank matrix approximation based on the SVD.\cite{halko2011finding}.
+The singular value decomposition (SVD) is ubiquitous in science and engineering computations. 
+Unfortunately, computation of the SVD is oftentimes prohibitively expensive; for a matrix $A\in\mathbb{R}^{m \times n}$ with $m\geq n$, computing the SVD costs $\mathcal{O}(mn^2)$ \cite{golub2012matrix}.
+For a very large matrix this is not feasible.
+In many cases, computing the exact, entire SVD is not necessary and an approximation is sufficient provided the spectrum decays. 
+This idea is used in image processing, learning tasks, and inverse problems to name a few.
+
+Fortunately, there exist a more recent class of algorithms for the low rank approximation of the SVD using randomized techniques.
+To compute a rank $k$ approximation of $A$, the cost is $\mathcal{O}(mn\log(k) + k^2(m+n))$ and the error is bounded by $n\sigma_{k+1}$ \cite{halko2011finding}.
+
+Implementing a SVD for a distributed memory architecture is a nontrivial task. We intend to implement a few carefully chosen randomized parallel SVD algorithms as presented in \cite{halko2011finding}.
+We will compare these algorithms against a state of the art SVD library.
+Challenges in implementing these algorithms include avoiding communication \cite{ballard2010minimizing}.
 
 \bibliography{rsvd.bib}{
 \bibliographystyle{plain}}
