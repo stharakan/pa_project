@@ -15,18 +15,37 @@
 \maketitle
 
 The singular value decomposition (SVD) is ubiquitous in science and engineering computations. 
-Unfortunately, computation of the SVD is oftentimes prohibitively expensive; for a matrix $A\in\mathbb{R}^{m \times n}$ with $m\geq n$, computing the SVD costs $\mathcal{O}(mn^2)$ \cite{golub2012matrix}.
-For a very large matrix this is not feasible.
+Unfortunately, computation of the SVD is oftentimes prohibitively expensive; for a matrix $A\in\mathbb{R}^{m \times n}$ with $m\geq n$, computing the SVD costs $\mathcal{O}(mn^2)$. \cite{golub2012matrix}
+For a large matrix this is not feasible, but the SVD is still required. 
 In many cases, computing the exact, entire SVD is not necessary and an approximation is sufficient provided the spectrum decays. 
-This idea is used in image processing, learning tasks, and inverse problems to name a few.
+Fields like image processing, learning tasks, and inverse problems utilize this concept to make large-scale computation feasible.
 
 Fortunately, there exist a more recent class of algorithms for the low rank approximation of the SVD using randomized techniques.
-To compute a rank $k$ approximation of $A$, the cost is $\mathcal{O}(mn\log(k) + k^2(m+n))$ and the error is bounded by $n\sigma_{k+1}$ \cite{halko2011finding}.
+To compute a rank $k$ approximation of $A$, the cost is $\mathcal{O}(mn\log(k) + k^2(m+n))$ and the error is on the order of $n\sigma_{k+1}$. \cite{halko2011finding}
+This is a significant speedup over the computation of the full SVD discussed above, and the error is reasonable provided $\sigma_{k+1}$ is small.
+
+The algorithms we will use are variants of the following outline: first, the full matrix $A$ is right-multiplied by $\Omega$, a Gaussian random matrix.
+$A\Omega \in \mathbb{R}^{m \times 2k}$, reducing the size. 
+Setting $q =1$ or $q = 2$, we successively multiply this product by $A^*$ and $A$ respectively, so that $Y = (A A^* ) ^q A \Omega$. 
+The next step is to find an orthonormal basis $Q$ for the column space $Y$, which uses a QR factorization or other orthogonalizing method. 
+Notably, in expectation, $Q$ approximately spans the column space of $A$ as well. \cite{witten2013randomized}
+If $Q$ accurately represents the column space of $A$, then $QQ^*A \approx A$.
+Now, we form $B = Q^* A$, and compute $B = \tilde{U} \Sigma V ^*$.
+Finally, set $U = Q \tilde{U}$.
+Plugging from the decompositions above then yields the SVD,
+\begin{align*}
+	A &\approx Q Q ^* A \\
+	  & = Q B \\
+		& = Q \tilde{U} \Sigma V^* \\
+	  & = U \Sigma V^*.
+\end{align*}
 
 Implementing a SVD for a distributed memory architecture is a nontrivial task.
-We intend to implement a few carefully chosen randomized parallel SVD algorithms as presented in \cite{halko2011finding}, \cite{kontoghiorghes2005handbook}.
-We will compare these algorithms against a state of the art SVD library.
 Challenges in implementing these algorithms include avoiding communication \cite{ballard2010minimizing} and restructuring the algorithm to take advantage of multiple threads and processors.
+Our aim is to use Message Passing Interface (MPI) and OpenMP to accelerate the computation of the matrix approximation, implementing a few carefully chosen randomized parallel SVD algorithms as presented in \cite{halko2011finding} and \cite{kontoghiorghes2005handbook}.
+We will compare these algorithms against each other and a state of the art SVD library, testing both time and accuracy. 
+The accuracy tests will compute relative error of the approximated matrix action on a random vector.
+Further, the practical speedup of the algorithms will be determined, to compare against theoretical guarantees and determine the scaling properties of each algorithm.
 
 \bibliography{rsvd.bib}{
 \bibliographystyle{plain}}
